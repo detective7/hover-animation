@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>custom cursor</title>
+</head>
+
+<body>
+    <div id="hover">
+        <div id="position">
+            <div id="circle"></div>
+        </div>
+    </div>
+    <style>
+        #hover {
+            height: 100px;
+            width: 100px;
+            position: absolute;
+            top: calc(50vh - 50px);
+            left: calc(50vw - 50px);
+            background-color: #ababab55;
+        }
+        #position{
+            height: 50px;
+            width: 50px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #circle {
+            width: 100%;
+            height: 100%;
+            background-color: #F21A44;
+            position: relative;
+            border-radius: 50%;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+/* 
+        #circle:after {
+            content: "";
+            position: absolute;
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            border: 1px solid #ababab;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            -webkit-transform: translate(-50%, -50%);
+        } */
+    </style>
+</body>
+
+<script type="text/javascript">
+    /*
+        require cusAnimation
+    */
+    $.cusAttractHover = function (selector, hover) {
+        var circle = {
+            el: selector,
+            hover: hover,
+            x: 0,
+            y: 0,
+            w: 0,
+            h: 0,
+            mouseX: 0,
+            mouseY: 0,
+            init: function() {
+                this.x = this.mouseX = this.hover.outerWidth()/2;
+                this.y = this.mouseY = this.hover.outerHeight()/2;
+                this.w = this.hover.outerWidth();
+                this.h = this.hover.outerHeight();
+            },
+            update: function () {
+                l = this.x - this.w / 2;
+                t = this.y - this.h / 2;
+                this.el.css({
+                    'transform':
+                        'translate3d(' + l + 'px,' + t + 'px, 0)'
+                });
+            }
+        };
+        circle.init();
+        move();
+
+        $(document).mousemove(function(e){
+            var newPosX = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0,
+                newPosY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+            circle.mouseX = e.clientX - (circle.hover.offset().left - newPosX) ;
+            circle.mouseY = e.clientY - (circle.hover.offset().top - newPosY) ;
+        });
+
+        function move() {
+            if( circle.mouseX < 0 || circle.mouseX > circle.hover.outerWidth() || circle.mouseY < 0 || circle.mouseY > circle.hover.outerHeight()){
+                circle.mouseX = circle.hover.outerWidth()/2,
+                circle.mouseY = circle.hover.outerHeight()/2;
+            }
+            circle.x = lerp(circle.x, circle.mouseX, 0.1);
+            circle.y = lerp(circle.y, circle.mouseY, 0.1);
+            circle.update();
+            window.requestAnimationFrame(move);
+        }
+
+        function lerp(start, end, amt) {
+            return (1 - amt) * start + amt * end;
+        }
+    };
+
+    
+    (function () {
+        var lastTime = 0;
+        var vendors = ['ms', 'moz', 'webkit', 'o'];
+        for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+            window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+            window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame']
+                || window[vendors[x] + 'CancelRequestAnimationFrame'];
+        }
+
+        if (!window.requestAnimationFrame) {
+            window.requestAnimationFrame = function (callback, element) {
+                var currTime = new Date().getTime();
+                var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+                var id = window.setTimeout(function () { callback(currTime + timeToCall); },
+                    timeToCall);
+                lastTime = currTime + timeToCall;
+                return id;
+            };
+        }
+        if (!window.cancelAnimationFrame) {
+            window.cancelAnimationFrame = function (id) {
+                clearTimeout(id);
+            };
+        }
+
+        $.cusAttractHover($('#circle'), $('#hover'));
+
+    })();
+</script>
+
+</html>
